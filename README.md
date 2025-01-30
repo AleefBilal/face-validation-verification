@@ -120,6 +120,13 @@ For production or Lambda deployment:
 
 ---
 
+## Future Work
+
+- Train and deploy AI Face image Classifier 
+- Develop methods to prevent the face validation pipeline from accepting faces displayed on a screen.
+
+---
+
 ## License & Acknowledgments
 - **Face Verification Model**: [AuraFace-v1](https://huggingface.co/fal/AuraFace-v1)
 

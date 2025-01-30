@@ -1,5 +1,7 @@
 import numpy as np
+import boto3
 from PIL import Image
+import botocore
 
 
 class FaceEmbeddings:
@@ -43,3 +45,14 @@ class FaceEmbeddings:
         is_same = bool(similarity > self.threshold)
         message = f"{'Same' if is_same else 'Different'} person with similarity: {similarity:.2f}"
         return message, is_same
+
+def download_file_from_s3(s3_key, local_path, bucket_name, **kwargs):
+    try:
+        s3_client = boto3.client('s3', aws_access_key_id=kwargs['key_id'], aws_secret_access_key=kwargs['secret'])
+        s3_client.download_file(bucket_name, s3_key, local_path)
+        print(f"File downloaded successfully: {local_path}")
+    except botocore.exceptions.ClientError as e:
+        error = e.response['Error']
+        if error['Code'] == "404":
+            raise FileNotFoundError(f"File {s3_key} not found in bucket {bucket_name}.")
+        raise e
