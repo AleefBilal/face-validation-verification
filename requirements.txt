@@ -6,7 +6,8 @@ opencv-python==4.10.0.84
 python-dotenv==1.0.1
 onnx==1.17.0
 onnxruntime==1.19.2
-numpy==2.0.2
+numpy==1.26.4
 boto3==1.35.53
 botocore==1.35.53
 insightface==0.7.3
+catboost ==1.2.7

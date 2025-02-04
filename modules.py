@@ -2,15 +2,17 @@ import numpy as np
 import boto3
 from PIL import Image
 import botocore
-
+import pandas as pd
 
 class FaceEmbeddings:
-    def __init__(self, model, threshold:float=0.5, ctx_id=0, det_size=(640, 640)):
+    def __init__(self, model, ai_image_classifier, threshold:float=0.5, ctx_id=0, det_size=(640, 640)):
         self.face_app = model
-        self.threshold = threshold
         self.face_app.prepare(ctx_id=ctx_id, det_size=det_size)
+        self.ai_image_classifier = ai_image_classifier
+        self.threshold = threshold
 
-    def preprocess_and_get_embedding(self, image):
+
+    def preprocess_and_get_embedding(self, image, key):
         # Open or convert the input image to RGB
         img = Image.open(image).convert("RGB") if isinstance(image, str) else Image.fromarray(image[:, :, ::-1])
 
@@ -28,13 +30,26 @@ class FaceEmbeddings:
             }
 
         # Return the normalized embedding of the first detected face
-        return faces[0].normed_embedding
+        embedding = faces[0].normed_embedding
+        feature_columns = [f'feature_{i}' for i in range(512)]
+        embedding_df = pd.DataFrame([embedding], columns=feature_columns)
+        prediction = (self.ai_image_classifier.predict(embedding_df))[0]
+        if prediction == 1:
+            return {
+                'statusCode': 200,
+                'body': {
+                    'status': False,
+                    'message': f"AI image detected in {key}, AI image is not acceptable."
+                }
+            }
+        else:
+            return embedding
 
     def batch_embeddings_and_similarity(self, image1, image2):
         # Get embeddings for both images
         embeddings = []
-        for img in [image1, image2]:
-            result = self.preprocess_and_get_embedding(img)
+        for pointer, img in enumerate([image1, image2]):
+            result = self.preprocess_and_get_embedding(img, key='album picture' if pointer==0 else 'selfie picture')
             # Check if the result is an error dictionary
             if isinstance(result, dict):
                 return result['body']['message'], False

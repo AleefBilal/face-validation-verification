@@ -2,26 +2,28 @@
 
 This repository contains a **Face Verification Lambda Function** designed to:
 1. Detect human faces in images.
-2. Verify if two images belong to the same individual.
+2. AI generated image prevention and detection.
+3. Verify if two images belong to the same individual.
 
 The function leverages:
 - **[AuraFace-v1](https://huggingface.co/fal/AuraFace-v1)** for face embedding and similarity verification.
+- **[Trained AI Image Classifier (CatBoost)](https://huggingface.co/Aleef/AI-Image-Classification)** for AI generated Image classification and prevention.
 
 Special thanks to the developers of these models!
-
----
-
-## Important Note
-- Download AuraFace first directly from huggingface [AuraFace-v1](https://huggingface.co/fal/AuraFace-v1), or just run
-`python model_download.py`. Your call.
 
 ---
 
 ## Features
 - Detects faces in provided images.
 - Validates that both the album and selfie images contain a single face.
+- Validate that the given image is not AI generated Image
 - Verifies whether the faces in the two images belong to the same individual.
 - Supports both **AWS S3** integration and local file paths.
+
+---
+
+## Important Note
+- Run `python model_download.py` script to download AuraFace and CatBoost.
 
 ---
 
@@ -95,6 +97,7 @@ For production or Lambda deployment:
 2. **Process**:
    - Downloads the images from S3 (if `USE_S3=ON`).
    - Validates that each image contains exactly one face.
+   - Validate that given image is not AI generated image.
    - Extracts embeddings and calculates cosine similarity.
 
 3. **Output**:
@@ -109,6 +112,9 @@ For production or Lambda deployment:
 ### 1. **Face Detection & Verification**
 - **[AuraFace-v1](https://huggingface.co/fal/AuraFace-v1)**  
   Detect Faces and Generates embeddings and compares cosine similarity to verify identity.
+- **[In-House Trained AI Image Classifier (CatBoost)](https://huggingface.co/Aleef/AI-Image-Classification)**  
+  AI generated Image classification and prevention.
+
 
 ---
 
@@ -116,18 +122,19 @@ For production or Lambda deployment:
 
 - **Images Not Found**: Ensure the provided file paths or S3 keys are correct.
 - **Multiple Faces Detected**: Ensure only one person is visible in each image.
+- **AI Image detected**: Do not use AI generated image. AI generated Image is not acceptable.
 - **Similarity Check Fails**: Images of the same individual may differ due to lighting or angles; try clearer images.
 
 ---
 
 ## Future Work
 
-- Train and deploy AI Face image Classifier 
 - Develop methods to prevent the face validation pipeline from accepting faces displayed on a screen.
 
 ---
 
 ## License & Acknowledgments
 - **Face Verification Model**: [AuraFace-v1](https://huggingface.co/fal/AuraFace-v1)
+- **AI Image Classification (In-house)**: [Trained AI Image Classifier (CatBoost)](https://huggingface.co/Aleef/AI-Image-Classification)
 
 Thank you to the contributors of these models for making them publicly available.

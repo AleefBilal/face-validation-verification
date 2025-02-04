@@ -7,6 +7,7 @@ from modules import FaceEmbeddings, download_file_from_s3
 from dotenv import load_dotenv
 from insightface.app import FaceAnalysis
 import cv2
+from catboost import CatBoostClassifier
 
 # Load environment variables
 load_dotenv('.env')
@@ -21,17 +22,19 @@ USE_S3 = os.getenv('USE_S3', 'ON').upper() == 'ON'
 BUCKET_NAME = os.getenv('BUCKET_NAME')
 KEY_ID = os.getenv('KEY_ID')
 SECRET = os.getenv('SECRET')
-
 THRESHOLD = os.getenv('THRESHOLD', 0.5)
 
 # Face analysis setup
 face_app = FaceAnalysis(
     name="auraface",
-    providers=["CPUExecutionProvider"],
+    providers=["CPUExecutionProvider"],  # ["CUDAExecutionProvider"] for GPU utilization
     root=".",
 )
-verification_model = FaceEmbeddings(model=face_app, threshold=float(THRESHOLD))
 
+Ai_image_detection_model =  CatBoostClassifier()
+Ai_image_detection_model.load_model('models/ai_image_classifier/cat_classifier.cbm')
+
+verification_model = FaceEmbeddings(model=face_app, ai_image_classifier=Ai_image_detection_model, threshold=float(THRESHOLD))
 
 def handle_verification(event, context):
     local_album_path = None
@@ -73,9 +76,6 @@ def handle_verification(event, context):
         else:
             local_album_path = album_path
             local_selfie_path = selfie_path
-
-        local_album_path = album_path
-        local_selfie_path = selfie_path
 
         logger.info('Images downloaded, starting human face validation.')
 
